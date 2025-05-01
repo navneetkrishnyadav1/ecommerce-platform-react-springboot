@@ -48,7 +48,7 @@ public class CategoryServiceImpl implements CategoryService {
         categoryResponse.setLastPage(categoryPage.isLast());
         return categoryResponse;
     }
-    @Override
+    @Override 
     public CategoryDTO createCategory(CategoryDTO categoryDTO) {
         Category category = modelMapper.map(categoryDTO, Category.class);
         Category categoryFromDb = categoryRepository.findByCategoryName(categoryDTO.getCategoryName());
