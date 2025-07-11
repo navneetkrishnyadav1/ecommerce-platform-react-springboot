@@ -38,26 +38,28 @@ public class WebSecurityConfig {
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
 
-    //here we're exposing bean of jwt filter that checks if jwt token exist and if it's valid in every request.
     @Bean
-    public AuthTokenFilter authenticationJwtTokenFilter(){
+    public AuthTokenFilter authenticationJwtTokenFilter() {
         return new AuthTokenFilter();
     }
 
+
     @Bean
-    public DaoAuthenticationProvider authenticationProvider(){
-        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(userDetailsService);
-        authenticationProvider.setPasswordEncoder(passwordEncoder());
-        return authenticationProvider;
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+
+        return authProvider;
     }
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception{
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
@@ -65,40 +67,37 @@ public class WebSecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
-                .sessionManagement(
-                        session ->
-                                session.sessionCreationPolicy(
-                                        SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authorizeRequests ->
-                        authorizeRequests.requestMatchers("/api/auth/**").permitAll()
-                                .requestMatchers("/h2-console/**").permitAll()
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth ->
+                        auth.requestMatchers("/api/auth/**").permitAll()
                                 .requestMatchers("/v3/api-docs/**").permitAll()
-                                .requestMatchers("/swagger-ui/**").permitAll()
-                                //.requestMatchers("/api/public/**").permitAll()
+                                .requestMatchers("/h2-console/**").permitAll()
                                 //.requestMatchers("/api/admin/**").permitAll()
+                                //.requestMatchers("/api/public/**").permitAll()
+                                .requestMatchers("/swagger-ui/**").permitAll()
                                 .requestMatchers("/api/test/**").permitAll()
                                 .requestMatchers("/images/**").permitAll()
-                                .anyRequest().authenticated());
+                                .anyRequest().authenticated()
+                );
 
         http.authenticationProvider(authenticationProvider());
-        http.addFilterBefore(authenticationJwtTokenFilter(),
-                UsernamePasswordAuthenticationFilter.class);
+
+        http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
         http.headers(headers -> headers.frameOptions(
                 frameOptions -> frameOptions.sameOrigin()));
+
         return http.build();
     }
 
     //for completely bypass security config
     @Bean
-    public WebSecurityCustomizer webSecurityCustomizer(){
-        return (web -> web.ignoring().requestMatchers(
-                "/v2/api-docs",
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web -> web.ignoring().requestMatchers("/v2/api-docs",
                 "/configuration/ui",
                 "/swagger-resources/**",
                 "/configuration/security",
                 "/swagger-ui.html",
-                "webjars/**"
-        ));
+                "/webjars/**"));
     }
     @Bean
     public CommandLineRunner initData(RoleRepository roleRepository, UserRepository userRepository, PasswordEncoder passwordEncoder) {
@@ -131,6 +130,9 @@ public class WebSecurityConfig {
             if (!userRepository.existsByUserName("user1")) {
                 User user1 = new User("user1", "user1@example.com", passwordEncoder.encode("password1"));
                 userRepository.save(user1);
+
+
+
             }
 
             if (!userRepository.existsByUserName("seller1")) {
