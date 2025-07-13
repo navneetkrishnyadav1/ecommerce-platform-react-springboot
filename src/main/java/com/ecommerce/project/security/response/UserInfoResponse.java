@@ -16,13 +16,6 @@ public class UserInfoResponse {
         this.roles = roles;
         this.username = username;
     }
-
-    public UserInfoResponse(Long id, String username, List<String> roles) {
-        this.id = id;
-        this.roles = roles;
-        this.username = username;
-    }
-
     public Long getId() {
         return id;
     }
